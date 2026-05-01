@@ -25,7 +25,8 @@ import java.util.List;
 
 //TODO: multi-character selection at some point? it may be a bit complex but it'd be nice
 public class TextBlockEditScreen extends TextEditorScreen {
-	private static final int innerPadding = 4;
+	private static final int TEXT_Y = 20;
+
 	private final TextBlockEntity textBlockEntity;
 
 	private List<EditBox> textWidgets;
@@ -128,7 +129,7 @@ public class TextBlockEditScreen extends TextEditorScreen {
 		super.extractRenderState(graphics, mouseX, mouseY, delta);
 
 		graphics.pose().pushMatrix();
-		graphics.pose().translate(0, 20 + 2 * this.width / 100F);
+		graphics.pose().translate(0, TEXT_Y + 2 * this.width / 100F);
 		for (int i = 0; i < this.textBlockEntity.lines.size(); ++i) {
 			var text = this.currentRow == i ? Component.literal(this.textBlockEntity.getRawLine(i)) : this.textBlockEntity.lines.get(i);
 
@@ -337,21 +338,7 @@ public class TextBlockEditScreen extends TextEditorScreen {
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		double mouseX = event.x();
 		double mouseY = event.y();
-		int topOffset = (int) (40 + 2 * this.width / 100F);
-
-		for (final var text : textWidgets) {
-			if (!text.mouseClicked(event, doubleClick)) {
-				continue;
-			}
-			this.setFocused(text);
-			if (this.colorListeners.contains(text)) {
-				this.colorListenerClicked(text);
-			}
-			if (this.colorPickerWidget.targetElement != text || !this.colorPickerWidget.isMouseOver(mouseX, mouseY)) {
-				text.setFocused(false);
-			}
-			break;
-		}
+		int topOffset = (int) (TEXT_Y + 2 * this.width / 100F);
 
 		if (colorPickerWidget.active && colorPickerWidget.visible) {
 			if (colorPickerWidget.isMouseOver(mouseX, mouseY)) {
@@ -359,12 +346,24 @@ public class TextBlockEditScreen extends TextEditorScreen {
 				this.setFocused(colorPickerWidget);
 				this.setDragging(true);
 				return true;
-			} else {
-				if (!this.colorPickerWidget.targetElement.isMouseOver(mouseX, mouseY)) {
-					toggleColorPicker(false);
-				}
+			} else if (!this.colorPickerWidget.targetElement.isMouseOver(mouseX, mouseY)) {
+				toggleColorPicker(false);
 			}
 		}
+
+		for (final var text : textWidgets) {
+			if (text.mouseClicked(event, doubleClick)) {
+				this.setFocused(text);
+				if (this.colorListeners.contains(text)) {
+					this.colorListenerClicked(text);
+				}
+				if (text != colorPickerWidget.targetElement && colorPickerWidget.isMouseOver(mouseX, mouseY)) {
+					text.setFocused(false);
+				}
+				return true;
+			}
+		}
+
 		if (mouseY > topOffset) {
 			this.currentRow = Mth.clamp((int) (mouseY - topOffset) / 12, 0, this.textBlockEntity.lines.size() - 1);
 			this.setFocused(null);
@@ -434,8 +433,8 @@ public class TextBlockEditScreen extends TextEditorScreen {
 	}
 
 	public static class TextScaleSliderWidget extends AbstractSliderButton {
-		private static final float MIN_SCALE = 0.125F;
-		private static final float MAX_SCALE = 16;
+		private static final float MIN_SCALE = 1;
+		private static final float MAX_SCALE = 128;
 
 		private final TextBlockEntity entity;
 
@@ -452,7 +451,7 @@ public class TextBlockEditScreen extends TextEditorScreen {
 
 		@Override
 		protected void applyValue() {
-			entity.scale = (float) Math.round(Mth.lerp(this.value, MIN_SCALE, MAX_SCALE) * 8F) / 8F;
+			entity.scale = (float) Math.round(Mth.lerp(this.value, MIN_SCALE, MAX_SCALE) * 2F) / 2F;
 			entity.renderDirty = true;
 		}
 	}

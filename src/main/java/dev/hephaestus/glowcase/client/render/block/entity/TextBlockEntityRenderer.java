@@ -109,16 +109,16 @@ public class TextBlockEntityRenderer implements BakedBlockEntityRenderer<TextBlo
 		// 2D rendering of the font has Y axis going down, not up
 		poseStack.scale(1, -1, 1);
 
+		float rotation = -(state.rotation16 * 360) / 16.0F;
+		poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
+
 		switch (state.zOffset) {
 			case FRONT -> poseStack.translate(0D, 0D, 0.4D);
 			case BACK -> poseStack.translate(0D, 0D, -0.4D);
 		}
 
-		float rotation = -(state.rotation16 * 360) / 16.0F;
-		poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
-
-		poseStack.scale(0.1F * state.scale, 0.1F * state.scale, 0.1F * state.scale);
-		poseStack.translate(0, -(state.lines.size() * this.font.lineHeight) / 2D, 0D);
+		poseStack.scale(0.010416667F * state.scale, 0.010416667F * state.scale, 0.010416667F * state.scale);
+		poseStack.translate(0, -((state.lines.size() - 0.25) * 12) / 2D, 0D);
 
 		switch (state.horizontalAlignment) {
 			case LEFT -> poseStack.translate(-maxWidth / 2F, 0, 0);
@@ -143,7 +143,7 @@ public class TextBlockEntityRenderer implements BakedBlockEntityRenderer<TextBlo
 
 			submitNodeCollector.submitText(poseStack,
 				x,
-				i * this.font.lineHeight,
+				i * 12,
 				line, state.shadow,
 				Font.DisplayMode.NORMAL,
 				LightCoordsUtil.FULL_BRIGHT,

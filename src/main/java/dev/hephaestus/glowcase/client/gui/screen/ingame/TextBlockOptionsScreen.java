@@ -32,7 +32,6 @@ public class TextBlockOptionsScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		super.onClose();
 		C2SEditTextBlock.of(this.entity).send();
 		Minecraft.getInstance().setScreen(this.returnScreen);
 	}
